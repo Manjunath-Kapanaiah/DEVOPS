@@ -1,0 +1,14 @@
+# Secrets and Environment variables
+.env
+*.pem
+*.key
+
+# Build artifacts and dependencies
+node_modules/
+dist/
+target/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
