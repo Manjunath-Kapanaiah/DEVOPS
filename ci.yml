@@ -1,0 +1,31 @@
+name: CI Pipeline
+
+# 1. Trigger: Run whenever code is pushed to the 'main' branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest  # The "Virtual Machine" GitHub provides
+
+    steps:
+      - name: Check
+      out Code
+        uses: actions/checkout@v4  # Pulls your code into the VM
+
+      - name: Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Code Quality Check (Lint)
+        run: npm run lint
+
+      - name: Run Automated Tests
+        run: npm test
