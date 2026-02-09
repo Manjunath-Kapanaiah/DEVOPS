@@ -11,6 +11,9 @@ jobs:
   test-and-lint:
     runs-on: ubuntu-latest  # The "Virtual Machine" GitHub provides
 
+defaults:
+      run:
+        working-directory: .github/workflows/ci.yml
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4  # Pulls your code into the VM
