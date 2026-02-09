@@ -69,8 +69,8 @@ Step 2: Goto source directory and Use fork option (button)
 
 -----------------------------------------------------------------------
 
-TASK 3: Branching strategies:	
-----------------------------------------------------------------------"
+TASK 3 & 4: Branching strategies and Pull requests :: 	
+----------------------------------------------------------------------
 
 git remote -v
 git remote set-url origin https://github.com/YourUsername/FORKED_REPO.git
@@ -81,5 +81,13 @@ git checkout new_feature
 echo "this file is to show pull request " >> DOWNSTREAM
 
 git add .
-git commit -m " Add DOWNSTREAM file for pull request demonstration"
+git commit -m "COMMIT ALL"
+git push origin main OR
+git puch https://github.com/Manjunath-Kapanaiah/DEVOPS.git
+
+----------------------------------------------------------------------
+
+TASK 5: HANDLING MERGE CONFLICTS 
+----------------------------------------------------------------------
+
 
