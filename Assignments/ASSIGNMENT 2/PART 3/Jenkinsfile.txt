@@ -1,0 +1,127 @@
+pipeline {
+
+    agent any
+
+    parameters {
+        choice(name: 'ENVIRONMENT', choices: ['dev','qa','stage','prod'], description: 'Deployment Environment')
+        booleanParam(name: 'DEBUG_MODE', defaultValue: false, description: 'Enable Debug')
+    }
+
+    environment {
+        SERVICE_A_ARTIFACT = "serviceA.tar.gz"
+        SERVICE_B_ARTIFACT = "serviceB.tar.gz"
+        CACHE_DIR = "dependency_cache"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Manjunath-Kapanaiah/DEVOPS.git'
+            }
+        }
+
+        stage('Dependency Cache Check') {
+            steps {
+                script {
+                    if (fileExists("${CACHE_DIR}/deps.txt")) {
+                        echo "Using cached dependencies"
+                    } else {
+                        echo "Fetching dependencies..."
+                        sh '''
+                        mkdir -p dependency_cache
+                        echo "libraryA" > dependency_cache/deps.txt
+                        echo "libraryB" >> dependency_cache/deps.txt
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Service A') {
+            steps {
+                sh '''
+                echo "Building Service A"
+                mkdir -p buildA
+                echo "Service A build for ${ENVIRONMENT}" > buildA/serviceA.txt
+                tar -czvf ${SERVICE_A_ARTIFACT} buildA
+                '''
+            }
+        }
+
+        stage('Test Service A') {
+
+            steps {
+                retry(2) {
+                    sh '''
+                    echo "Running tests for Service A"
+                    sleep 3
+                    '''
+                }
+            }
+        }
+
+        stage('Build Service B') {
+            steps {
+                sh '''
+                echo "Building Service B"
+                mkdir -p buildB
+                echo "Service B build for ${ENVIRONMENT}" > buildB/serviceB.txt
+                tar -czvf ${SERVICE_B_ARTIFACT} buildB
+                '''
+            }
+        }
+
+        stage('Test Service B') {
+            steps {
+                retry(2) {
+                    sh '''
+                    echo "Running tests for Service B"
+                    sleep 3
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Services') {
+
+            when {
+                expression {
+                    return params.ENVIRONMENT != "dev"
+                }
+            }
+
+            steps {
+                sh '''
+                echo "Deploying services to ${ENVIRONMENT}"
+
+                echo "System Info:"
+                uname -a
+                date
+                hostname
+
+                echo "Deploying Service A"
+                echo "Deploying Service B"
+
+                echo "Deployment completed"
+                '''
+            }
+        }
+    }
+
+    post {
+
+        success {
+            echo "Pipeline executed successfully"
+            archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
+        }
+
+        failure {
+            echo "Pipeline failed"
+        }
+
+        always {
+            echo "Cleaning workspace"
+        }
+    }
+}

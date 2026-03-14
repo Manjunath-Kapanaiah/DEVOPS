@@ -1,0 +1,31 @@
+downgrading and managing plugin conflict:: 
+
+
+Stop Jenkins:
+
+	sudo systemctl stop jenkins
+
+Plugins Directory:
+
+	cd /var/lib/jenkins/plugins
+	ls -l | grep git
+
+You will see something like:
+
+	git.jpi
+	git-client.jpi
+
+Backing up Current Plugin::
+
+	sudo mv git.jpi git.jpi.backup
+	sudo mv git-client.jpi git-client.jpi.backup
+
+
+Download Older Version:	
+
+	sudo wget https://updates.jenkins.io/download/plugins/git/4.13.0/git.hpi
+	sudo wget https://updates.jenkins.io/download/plugins/git-client/3.13.0/git-client.hpi
+
+Start Jenkins:
+	
+	sudo systemctl start jenkins

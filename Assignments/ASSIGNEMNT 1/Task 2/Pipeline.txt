@@ -1,0 +1,90 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(
+            name: 'GIT_BRANCH',
+            defaultValue: 'master',
+            description: 'Git branch to build'
+        )
+        booleanParam(
+            name: 'SIMULATE_FAILURE',
+            defaultValue: false,
+            description: 'Check to simulate test failure'
+        )
+    }
+
+    environment {
+        REPO_URL = 'https://github.com/Manjunath-Kapanaiah/DevOpsCodeDemo.git'
+        LOG_FILE = 'build.log'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    try {
+                        echo "Checking out branch: ${params.GIT_BRANCH}"
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: "*/${params.GIT_BRANCH}"]],
+                            userRemoteConfigs: [[url: "${env.REPO_URL}"]]
+                        ])
+                    } catch (Exception e) {
+                        error "Branch '${params.GIT_BRANCH}' does not exist or checkout failed."
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    echo "Building application..."
+                    sh "echo 'Building application...' > ${env.LOG_FILE}"
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    retry(2) {
+                        echo "Running tests..."
+                        if (params.SIMULATE_FAILURE) {
+                            echo "Simulating test failure..."
+                            sh "echo 'Test Failed' >> ${env.LOG_FILE}"
+                            error("Test stage failed!")
+                        } else {
+                            echo "Tests passed!"
+                            sh "echo 'Test Passed' >> ${env.LOG_FILE}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression { currentBuild.currentResult == 'SUCCESS' }
+            }
+            steps {
+                echo "Deploying application..."
+                sh "echo 'Deployment successful' >> ${env.LOG_FILE}"
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Simulating email notification: Build failed!"
+        }
+        success {
+            echo "Archiving logs..."
+            archiveArtifacts artifacts: "${env.LOG_FILE}", fingerprint: true
+        }
+        always {
+            echo "Pipeline execution completed."
+        }
+    }
+}

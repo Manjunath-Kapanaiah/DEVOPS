@@ -1,0 +1,50 @@
+JVM Heap Size to 2GB (Simulating jenkins.xml)::
+
+	> sudo nano /etc/default/jenkins
+
+change:
+
+	JAVA_ARGS="-Xms512m -Xmx2048m"
+
+Restart: 
+	sudo systemctl restart jenkins
+
+change C:\Program Files\Jenkins\jenkins.xml to <arguments>-Xrs -Xmx2048m -jar "%BASE%\jenkins.war"</arguments> and Restart Jenkins service.
+
+goto:
+	> Manage Jenkins → System Information
+
+check: 
+	>-Xmx2048m
+
+
+
+Force Disk Cleanup if /var/lib/jenkins > 10GB::
+
+Check Disk Usage: 	df -h
+
+Check usage of:		/var/lib/jenkins
+
+Create Cleanup Script:
+
+		> sudo vim cleanup.sh
+
+#!/bin/bash
+
+USAGE=$(du -s /var/lib/jenkins | cut -f1)
+LIMIT=$((10 * 1024 * 1024))  # 10GB in KB
+
+if [ "$USAGE" -gt "$LIMIT" ]; then
+    echo "Jenkins exceeds 10GB. Cleaning old builds..."
+
+    find /var/lib/jenkins/jobs/ -type d -name builds -exec rm -rf {}/* \;
+
+    echo "Cleanup completed."
+else
+    echo "Disk usage under control."
+fi
+
+
+
+chmod +x cleanup.sh
+./cleanup.sh

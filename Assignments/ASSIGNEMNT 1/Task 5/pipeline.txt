@@ -1,0 +1,22 @@
+pipeline {
+    agent { label 'slave2' }   // Use your agent label
+
+    stages {
+        stage('Long Running Task') {
+            steps {
+                echo "Build started on agent..."
+                sh 'sleep 120'
+                echo "Build completed after sleep"
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Build failed due to agent disconnection or other issue."
+        }
+        success {
+            echo "Build succeeded."
+        }
+    }
+}

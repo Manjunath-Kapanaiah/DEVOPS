@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+    stages {
+        stage('JobA') {
+            steps {
+                git branch: 'master', url: 'https://github.com/Manjunath-Kapanaiah/DevOpsCodeDemo.git'
+            }
+        }
+        stage('JobB') {
+            steps {
+                script {
+                    def status = sh(script: 'echo "Running unit tests..."; exit 1', returnStatus: true)
+                    if (status != 0) {
+                        input message: "JobB failed. Approve JobC to run?"
+                    }
+                }
+            }
+        }
+        stage('JobC') {
+            steps {
+                echo "Running deployment..."
+            }
+        }
+    }
+}

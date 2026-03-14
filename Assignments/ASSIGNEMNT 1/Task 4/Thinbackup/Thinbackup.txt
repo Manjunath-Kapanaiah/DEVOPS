@@ -1,0 +1,20 @@
+Install ThinBackup plugin and take manual backup
+
+✔ Installed ThinBackup 2.13
+✔ Identified compatibility issue with Jenkins 2.541.2
+✔ Switched to native JENKINS_HOME tar backup strategy
+
+steps::
+
+Confirm JENKINS_HOME
+	> Manage Jenkins → System Information
+	> JENKINS_HOME
+	 	> /var/lib/jenkins
+
+Take Manual Backup
+	> sudo tar -czvf jenkins_backup_$(date +%F).tar.gz /var/lib/jenkins
+	> ls -lh jenkins_backup_*.tar.gz -> to confirm backup
+
+	> sudo systemctl stop jenkins
+	> sudo tar -xzvf jenkins_backup_2026-03-02.tar.gz -C /
+	> sudo systemctl start jenkins

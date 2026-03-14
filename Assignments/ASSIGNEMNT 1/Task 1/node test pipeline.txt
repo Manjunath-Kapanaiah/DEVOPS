@@ -1,0 +1,21 @@
+pipeline {
+    agent none
+    stages {
+        stage('Parallel Build') {
+            parallel {
+                stage('Job1') {
+                    agent { label 'SLAVE' }
+                    steps {
+                        sh 'echo Running Job1 on $(hostname); sleep 20'
+                    }
+                }
+                stage('Job2') {
+                    agent { label 'SLAVE2' }
+                    steps {
+                        sh 'echo Running Job2 on $(hostname); sleep 20'
+                    }
+                }
+            }
+        }
+    }
+}
