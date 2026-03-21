@@ -1,0 +1,59 @@
+Jenkins Pipeline Explanation
+
+This pipeline is a Declarative Jenkins pipeline that demonstrates CI/CD
+concepts such as parameterization, failure handling, conditional
+deployment, logging, and cleanup.
+
+1.  Pipeline Start The pipeline runs on any available Jenkins agent
+    using: agent any
+
+2.  Parameters A parameter is defined to allow the user to select a
+    branch at runtime: BRANCH_NAME (default: main)
+
+3.  Environment Variables
+
+-   REPO_URL: Git repository URL
+-   LOG_DIR: Directory to store logs
+-   ARCHIVE_DIR: Directory to archive logs
+
+4.  Options
+
+-   Timeout: Stops build after 5 minutes
+-   Build Discarder: Keeps only last 5 builds
+
+5.  Stages
+
+Stage 1: Checkout Clones the specified branch from GitHub.
+
+Stage 2: Setup Creates directories for logs and archived logs.
+
+Stage 3: Build Simulates a build process by writing to build.log.
+
+Stage 4: Test (Simulate Failure) Creates a test log and intentionally
+fails the pipeline using exit 1.
+
+Stage 5: Deploy Runs only if the build is successful. In this case, it
+is skipped because the test stage fails.
+
+6.  Post Section
+
+Failure Block: - Prints failure message - Copies logs to archive
+directory - Archives logs in Jenkins
+
+Success Block: - Archives logs if build is successful
+
+Always Block: - Deletes old log files older than 1 day - Cleans
+workspace
+
+7.  Execution Flow
+
+-   Checkout completes
+-   Setup creates folders
+-   Build succeeds
+-   Test fails intentionally
+-   Deploy is skipped
+-   Failure block archives logs
+-   Cleanup runs
+
+This pipeline is useful for demonstrating real-world DevOps practices
+such as error handling, logging, artifact archiving, and cleanup.

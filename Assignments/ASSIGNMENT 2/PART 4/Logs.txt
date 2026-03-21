@@ -1,0 +1,120 @@
+Started by user admin
+Obtained Jenkinsfile from git https://github.com/Manjunath-Kapanaiah/REMOTE.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Agent-1 in /home/ubuntu/jenkins/workspace/Failure Handling and Reporting
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential ubuntu
+Cloning the remote Git repository
+Cloning repository https://github.com/Manjunath-Kapanaiah/REMOTE.git
+ > git init /home/ubuntu/jenkins/workspace/Failure Handling and Reporting # timeout=10
+Fetching upstream changes from https://github.com/Manjunath-Kapanaiah/REMOTE.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+using GIT_SSH to set credentials ubuntu
+Verifying host key using known hosts file
+You're using 'Known hosts file' strategy to verify ssh host keys, but your known_hosts file does not exist, please go to 'Manage Jenkins' -> 'Security' -> 'Git Host Key Verification Configuration' and configure host key verification.
+ > git fetch --tags --force --progress -- https://github.com/Manjunath-Kapanaiah/REMOTE.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+Checking out Revision 903d311d4ef1abf226873f730dac823f7a4659e0 (refs/remotes/origin/main)
+Commit message: "Update Jenkinsfile"
+ > git config remote.origin.url https://github.com/Manjunath-Kapanaiah/REMOTE.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 903d311d4ef1abf226873f730dac823f7a4659e0 # timeout=10
+ > git rev-list --no-walk 474269d48d96d5722cde91235477b2afab92075f # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timeout
+Timeout set to expire in 5 min 0 sec
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+Cloning main
+[Pipeline] git
+The recommended git tool is: NONE
+No credentials specified
+Fetching changes from the remote Git repository
+ > git rev-parse --resolve-git-dir /home/ubuntu/jenkins/workspace/Failure Handling and Reporting/.git # timeout=10
+ > git config remote.origin.url https://github.com/jenkinsci/jenkins.git # timeout=10
+Fetching upstream changes from https://github.com/jenkinsci/jenkins.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/jenkinsci/jenkins.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Checking out Revision 903d311d4ef1abf226873f730dac823f7a4659e0 (refs/remotes/origin/main)
+Commit message: "Update Jenkinsfile"
+First time build. Skipping changelog.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Setup)
+[Pipeline] sh
++ mkdir -p logs archive_logs
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] sh
++ echo Build successful
+[Pipeline] }
+[Pipeline] // stage
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 903d311d4ef1abf226873f730dac823f7a4659e0 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b main 903d311d4ef1abf226873f730dac823f7a4659e0 # timeout=10
+[Pipeline] stage
+[Pipeline] { (Test (Simulate Failure))
+[Pipeline] sh
++ echo Test failed intentionally
++ exit 1
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy)
+Stage "Deploy" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+Cleaning workspace...
+[Pipeline] sh
++ find /home/ubuntu/jenkins/workspace/Failure Handling and Reporting -type f -name *.log -mtime +1 -exec rm -f {} ;
+[Pipeline] cleanWs
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] done
+[Pipeline] echo
+Build FAILED ❌
+[Pipeline] echo
+ALERT: Sending notification (mock)
+[Pipeline] sh
++ [ -d logs ]
+[Pipeline] archiveArtifacts
+Archiving artifacts
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE

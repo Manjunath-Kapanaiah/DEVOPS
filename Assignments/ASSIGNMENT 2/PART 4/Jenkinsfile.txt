@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
+    }
+
+    environment {
+        REPO_URL = 'https://github.com/jenkinsci/jenkins.git' // public repo
+        LOG_DIR = 'logs'
+        ARCHIVE_DIR = 'archive_logs'
+    }
+
+    options {
+        timeout(time: 5, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Cloning ${params.BRANCH_NAME}"
+                git branch: "${params.BRANCH_NAME}", url: "${REPO_URL}"
+            }
+        }
+
+        stage('Setup') {
+            steps {
+                sh 'mkdir -p $LOG_DIR $ARCHIVE_DIR'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'echo "Build successful" > $LOG_DIR/build.log'
+            }
+        }
+
+        stage('Test (Simulate Failure)') {
+            steps {
+                sh '''
+                    echo "Test failed intentionally" > $LOG_DIR/test.log
+                    exit 1
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression { currentBuild.currentResult == 'SUCCESS' }
+            }
+            steps {
+                sh 'echo "Deploy success" > $LOG_DIR/deploy.log'
+            }
+        }
+    }
+
+    post {
+
+        failure {
+            echo "Build FAILED ❌"
+            echo "ALERT: Sending notification (mock)"
+
+            sh '''
+            if [ -d "$LOG_DIR" ]; then
+                cp -r $LOG_DIR/* $ARCHIVE_DIR/ || true
+            fi
+            '''
+
+            archiveArtifacts artifacts: 'archive_logs/**', allowEmptyArchive: true
+        }
+
+        success {
+            echo "Build SUCCESS ✅"
+            archiveArtifacts artifacts: 'logs/**', allowEmptyArchive: true
+        }
+
+        always {
+            echo "Cleaning workspace..."
+
+            sh '''
+            find "$WORKSPACE" -type f -name "*.log" -mtime +1 -exec rm -f {} \\; || true
+            '''
+
+            cleanWs()
+        }
+    }
+}
