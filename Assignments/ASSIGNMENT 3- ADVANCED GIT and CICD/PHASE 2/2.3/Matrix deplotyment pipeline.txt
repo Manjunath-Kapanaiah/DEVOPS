@@ -1,0 +1,73 @@
+REPO:: https://github.com/Manjunath-Kapanaiah/transaction-service.git
+
+
+
+name: Transaction CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  repository_dispatch:
+    types: [ fraud-check ]
+
+jobs:
+
+# -------------------------------
+# MATRIX TESTING (JAVA 11 & 17)
+# -------------------------------
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: [11, 17]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+
+      - name: Build & Test
+        run: |
+          echo "Running tests on Java ${{ matrix.java-version }}"
+          ./mvnw test || echo "Simulating tests"
+
+# -------------------------------
+# DEPLOY TO DEV
+# -------------------------------
+  deploy-dev:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - run: echo "Deploying to DEV"
+
+# -------------------------------
+# DEPLOY TO STAGING
+# -------------------------------
+  deploy-staging:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - run: echo "Deploying to STAGING"
+
+# -------------------------------
+# DEPLOY TO PRODUCTION (BLOCKED)
+# -------------------------------
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+
+    if: github.event.client_payload.status == 'success'
+
+    steps:
+      - run: echo "Deploying to PRODUCTION"

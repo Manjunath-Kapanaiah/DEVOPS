@@ -1,0 +1,13 @@
+This project is an end-to-end CI/CD pipeline where multiple tools are connected to simulate a real-world microservices deployment.
+
+The flow starts with GitLab, where the User Authentication service pipeline runs. Once that pipeline is successful, it triggers Jenkins using an API call. Jenkins acts as the central controller of the entire system.
+
+Inside Jenkins, the pipeline first checks whether the GitLab pipeline completed successfully. This step is important because it ensures that downstream processes don’t start if there is already a failure upstream.
+
+After validation, Jenkins deploys the Fraud Detection service to Kubernetes using a deployment YAML file. This represents how applications are deployed in real production environments using infrastructure as code.
+
+Once deployment is done, Jenkins triggers a workflow in GitHub Actions, which represents another dependent service—in this case, the Transaction service. Jenkins then continuously checks the status of that workflow using APIs until it completes.
+
+If everything succeeds, the pipeline ends successfully. But if the downstream process fails, Jenkins automatically performs a rollback using Kubernetes commands to restore the previous stable version. This ensures system reliability and avoids broken deployments.
+
+Overall, this project demonstrates how multiple CI/CD tools can be integrated, how dependencies between services are handled, and how failures are managed using automated rollback.
