@@ -1,0 +1,16 @@
+
+Front end repor link::
+
+https://gitlab.com/Manjunath-Kapanaiah/front-end.git
+
+__________________________________________________
+
+Api service repo link ::
+
+https://gitlab.com/Manjunath-Kapanaiah/api-service.git
+
+__________________________________________________
+
+DB migrations repor link:: 
+
+https://github.com/Manjunath-Kapanaiah/db-migration.git
