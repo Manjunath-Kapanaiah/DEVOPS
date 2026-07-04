@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'mymaven'   // must match name in Manage Jenkins > Tools > Maven installations
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Compiling the project...'
+                bat 'mvn clean compile'
+            }
+        }
+
+        stage('Unit Testing') {
+            steps {
+                echo 'Running unit tests...'
+                bat 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('SCA - Static Code Analysis') {
+            steps {
+                echo 'Running static code analysis (SpotBugs)...'
+                bat 'mvn com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '**/target/spotbugsXml.xml', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Integration Testing') {
+            steps {
+                echo 'Running integration tests...'
+                bat 'mvn verify -DskipUnitTests=true'
+            }
+            post {
+                always {
+                    junit '**/target/failsafe-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                bat 'mvn package -DskipTests'
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'All CI stages (Unit Test, SCA, Integration Test, Package) passed!'
+        }
+        failure {
+            echo 'Pipeline failed! Check stage logs above.'
+        }
+    }
+}

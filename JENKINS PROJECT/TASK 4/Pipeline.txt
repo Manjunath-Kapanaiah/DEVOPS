@@ -1,0 +1,51 @@
+pipeline {
+
+    agent any
+
+    tools {
+        maven 'mymaven'
+    }
+
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Manjunath-Kapanaiah/JAVA-SONARQUBE_JENKINS.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn clean verify'
+            }
+        }
+
+        stage('SonarCloud Analysis') {
+            steps {
+                withSonarQubeEnv('SonarCloud') {
+                    bat """
+                    mvn sonar:sonar ^
+                    -Dsonar.projectKey=manjunath-kapanaiah ^
+                    -Dsonar.organization=manjunath-kapanaiah ^
+                    -Dsonar.host.url=https://sonarcloud.io ^
+                    -Dsonar.token=%SONAR_TOKEN%
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and SonarCloud analysis completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}

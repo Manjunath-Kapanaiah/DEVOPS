@@ -1,0 +1,70 @@
+pipeline {
+
+    agent {
+        label "${params.AGENT}"
+    }
+
+    parameters {
+        choice(
+            name: 'AGENT',
+            choices: ['agent1', 'agent2'],
+            description: 'Select the EC2 Agent'
+        )
+    }
+
+    stages {
+
+        stage('Agent Details') {
+            steps {
+                sh '''
+                echo "Running on:"
+                hostname
+                whoami
+                pwd
+                '''
+            }
+        }
+
+        stage('Check Java') {
+            steps {
+                sh '''
+                if command -v java >/dev/null 2>&1
+                then
+                    echo "Java already installed"
+                    java -version
+                else
+                    echo "Java NOT installed"
+                fi
+                '''
+            }
+        }
+
+        stage('Install Java') {
+            steps {
+                sh '''
+                if ! command -v java >/dev/null 2>&1
+                then
+                    echo "Installing Java..."
+
+                    sudo apt update
+                    sudo apt install openjdk-17-jdk -y
+
+                    echo "Installation Complete"
+                else
+                    echo "Skipping Installation"
+                fi
+                '''
+            }
+        }
+
+        stage('Verify Installation') {
+            steps {
+                sh '''
+                java -version
+                '''
+            }
+        }
+
+    }
+
+}

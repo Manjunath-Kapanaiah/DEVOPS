@@ -1,0 +1,51 @@
+Started by user admin
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on EC2-Agent-2 in /home/ubuntu/jenkins/workspace/Java-Deployment
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Agent Details)
+[Pipeline] sh
++ echo Running on:
+Running on:
++ hostname
+A2
++ whoami
+ubuntu
++ pwd
+/home/ubuntu/jenkins/workspace/Java-Deployment
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Check Java)
+[Pipeline] sh
++ command -v java
++ echo Java already installed
+Java already installed
++ java -version
+openjdk version "21.0.11" 2026-04-21
+OpenJDK Runtime Environment (build 21.0.11+10-1-26.04.2-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.11+10-1-26.04.2-Ubuntu, mixed mode, sharing)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Java)
+[Pipeline] sh
++ command -v java
++ echo Skipping Installation
+Skipping Installation
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Verify Installation)
+[Pipeline] sh
++ java -version
+openjdk version "21.0.11" 2026-04-21
+OpenJDK Runtime Environment (build 21.0.11+10-1-26.04.2-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.11+10-1-26.04.2-Ubuntu, mixed mode, sharing)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

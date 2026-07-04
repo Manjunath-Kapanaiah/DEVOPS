@@ -1,0 +1,1 @@
+https://github.com/Manjunath-Kapanaiah/parallel-ci-demo.git
