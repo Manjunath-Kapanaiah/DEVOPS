@@ -1,0 +1,88 @@
+// Jenkins pipeline to apply OR destroy infrastructure with Terraform.
+pipeline {
+  agent any
+
+  parameters {
+    choice(name: 'ACTION', choices: ['apply', 'destroy'],
+           description: 'apply = create infrastructure, destroy = tear it down')
+  }
+
+  environment {
+    GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-sa-key')
+    TF_VAR_project_id = 'capstone-project-505907'
+    TF_IN_AUTOMATION  = 'true'
+  }
+
+  options { timestamps() }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Terraform Init') {
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'terraform init -input=false'
+        }
+      }
+    }
+
+    stage('Format & Validate') {
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'terraform fmt -check -recursive'
+          sh 'terraform init -backend=false'
+          sh 'terraform validate'
+        }
+      }
+    }
+
+    stage('Security Scan (tfsec)') {
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'docker run --rm -v $PWD:/src aquasec/tfsec /src --soft-fail'
+          // drop --soft-fail once findings are triaged, to make it a hard gate
+        }
+      }
+    }
+
+    stage('Terraform Plan') {
+      when { expression { params.ACTION == 'apply' } }
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'terraform plan -input=false -out=tfplan'
+        }
+      }
+    }
+
+    stage('Approval') {
+      steps {
+        input message: "Proceed with '${params.ACTION}'?", ok: params.ACTION
+      }
+    }
+
+    stage('Terraform Apply') {
+      when { expression { params.ACTION == 'apply' } }
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'terraform apply -input=false tfplan'
+        }
+      }
+    }
+
+    stage('Terraform Destroy') {
+      when { expression { params.ACTION == 'destroy' } }
+      steps {
+        dir('project-4.3-jenkins/terraform') {
+          sh 'terraform destroy -input=false -auto-approve'
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo "Terraform '${params.ACTION}' completed successfully." }
+    failure { echo 'Pipeline failed — check the logs above.' }
+  }
+}

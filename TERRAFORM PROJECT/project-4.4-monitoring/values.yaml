@@ -1,0 +1,58 @@
+# Values for the kube-prometheus-stack Helm chart, trimmed to run comfortably on
+# a small local kind cluster. This one chart installs Prometheus + Grafana +
+# node-exporter + kube-state-metrics together.
+grafana:
+  admin:
+    existingSecret: grafana-admin          # was adminPassword: "admin123"
+    userKey: admin-user
+    passwordKey: admin-password
+    
+  persistence:                             # dashboards survive restarts
+    enabled: true
+    size: 5Gi
+    
+  service:
+    type: ClusterIP              # can be reached via `kubectl port-forward`
+    
+  resources:
+    # Grafana 13.x is heavy on startup (DB migrations + plugin loading). A tight
+    # CPU limit throttles boot so much that the liveness probe kills it before it
+    # ever listens on :3000 -> permanent CrashLoop. Give it real CPU headroom.
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: 1000m, memory: 1Gi }   # 512Mi got OOMKilled after ~1.5h
+  # Be patient during the (slow) first boot so kubelet doesn't kill it mid-startup.
+  livenessProbe:
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    timeoutSeconds: 30
+    failureThreshold: 30
+    
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+    failureThreshold: 30
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    # 500m CPU throttled Prometheus so hard its /-/ready probe timed out and
+    # kubelet kept killing it. Give it more headroom.
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits:   { cpu: 1000m, memory: 1Gi }
+      
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 10Gi
+
+# Keep the footprint small for a local demo.
+alertmanager:
+  enabled: true
+  
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 25m, memory: 32Mi }
