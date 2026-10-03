@@ -1,0 +1,15 @@
+# ---- Stage 1: build the static files with Node ----
+FROM node:18-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# ---- Stage 2: serve with the unprivileged, pinned nginx ----
+FROM nginxinc/nginx-unprivileged:1.27.5-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 8080

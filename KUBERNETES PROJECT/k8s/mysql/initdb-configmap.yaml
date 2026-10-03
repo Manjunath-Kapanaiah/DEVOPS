@@ -1,0 +1,13 @@
+# Schema is owned by Flyway (app/backend/src/main/resources/db/migration),
+# and the DB + application user are created by the mysql container from the
+# Secret's MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD env vars.
+# This ConfigMap is intentionally a no-op now (kept so the StatefulSet's
+# /docker-entrypoint-initdb.d mount still resolves). No credentials in Git.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb
+  namespace: employee-app
+data:
+  init.sql: |
+    -- intentionally empty: schema via Flyway, DB/user via mysql env vars

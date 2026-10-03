@@ -1,0 +1,71 @@
+services:
+  # Database tier
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: employeedb
+      MYSQL_USER: employee
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      # Schema + seed data are owned by Flyway (runs from the backend on boot),
+      # so no init.sql mount is needed. Data persists between restarts.
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cache tier
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Application tier (Spring Boot)
+  backend:
+    # Pushed to Docker Hub, still lets us rebuild locally.
+    image: likith0129/employee-backend:1.1.0
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile.backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/employeedb
+      SPRING_DATASOURCE_USERNAME: employee
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      # Actuator health endpoint; frontend waits for this so nginx can resolve us.
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8082' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # Presentation tier (React + non-root nginx)
+  frontend:
+    # Pushed to Docker Hub; `build` still lets us rebuild locally.
+    image: likith0129/employee-frontend:1.1.0
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      # Host 8085 -> unprivileged nginx 8080 (it cannot bind 80 as non-root).
+      - "8085:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
